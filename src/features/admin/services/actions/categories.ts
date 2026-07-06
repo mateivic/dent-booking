@@ -120,7 +120,8 @@ export async function deleteCategory(input: { id: string }): Promise<ActionResul
         .from("services")
         .select("id", { count: "exact", head: true })
         .eq("category_id", input.id)
-        .eq("tenant_id", admin.tenantId);
+        .eq("tenant_id", admin.tenantId)
+        .is("deleted_at", null);
 
     if ((count ?? 0) > 0) {
         return {
@@ -135,7 +136,18 @@ export async function deleteCategory(input: { id: string }): Promise<ActionResul
         .eq("id", input.id)
         .eq("tenant_id", admin.tenantId);
 
-    if (error) return { ok: false, error: error.message };
+    if (error) {
+        // 23503 = FK violation: archived (soft-deleted) services still reference
+        // this category (services → service_categories is ON DELETE RESTRICT).
+        // Those rows are kept for reservation history, so the category can't go.
+        if (error.code === "23503") {
+            return {
+                ok: false,
+                error: "This category still has archived services from past bookings and can't be deleted.",
+            };
+        }
+        return { ok: false, error: error.message };
+    }
 
     revalidatePath("/admin/services");
     return { ok: true };

@@ -256,13 +256,11 @@ async function processReservation(
       // Optional per-tenant sender override; both paths are sanitized to the
       // <=11-char alphanumeric sender id carriers require.
       const res = await sendSms({
-        sender: deriveSmsSender(
-          config.sms?.senderName?.trim() || tenant.name,
-        ),
+        sender: deriveSmsSender(config.sms?.senderName?.trim() || tenant.name),
         recipient,
         content: buildReminderSms({
           tenantName: tenant.name,
-          locationName: location.name,
+          locationAddress: location.address || location.name,
           startIso: reservation.start_time,
           timezone: location.timezone,
         }),

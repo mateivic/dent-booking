@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import {
     DndContext,
     KeyboardSensor,
@@ -21,6 +21,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/features/booking/lib/money";
 import type { Service, ServiceCategory } from "@/lib/supabase/types";
@@ -417,6 +418,7 @@ function ServiceRow({ service, onError, onLocalUpdate, onLocalDelete }: ServiceR
     const [duration, setDuration] = useState(String(service.duration_minutes));
     const [price, setPrice] = useState(String(service.price));
     const [isPending, startTransition] = useTransition();
+    const fieldId = useId();
 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
         useSortable({ id: service.id });
@@ -471,33 +473,47 @@ function ServiceRow({ service, onError, onLocalUpdate, onLocalDelete }: ServiceR
                 style={style}
                 className="rounded-md border border-brand/40 bg-surface-muted p-3"
             >
-                <div className="grid gap-2 sm:grid-cols-2">
-                    <Input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Service name"
-                        autoFocus
-                    />
-                    <Input
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Description (optional)"
-                    />
-                    <Input
-                        type="number"
-                        min={1}
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        placeholder="Duration (min)"
-                    />
-                    <Input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        placeholder="Price"
-                    />
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1">
+                        <Label htmlFor={`${fieldId}-name`}>Service name</Label>
+                        <Input
+                            id={`${fieldId}-name`}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor={`${fieldId}-description`}>
+                            Description (optional)
+                        </Label>
+                        <Input
+                            id={`${fieldId}-description`}
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor={`${fieldId}-duration`}>Duration (min)</Label>
+                        <Input
+                            id={`${fieldId}-duration`}
+                            type="number"
+                            min={1}
+                            value={duration}
+                            onChange={(e) => setDuration(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor={`${fieldId}-price`}>Price (€)</Label>
+                        <Input
+                            id={`${fieldId}-price`}
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <div className="mt-2 flex gap-2">
                     <Button size="sm" onClick={handleSave} disabled={isPending}>
@@ -671,6 +687,7 @@ function AddServiceForm({
     const [duration, setDuration] = useState("30");
     const [price, setPrice] = useState("0");
     const [isPending, startTransition] = useTransition();
+    const fieldId = useId();
 
     function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
@@ -698,36 +715,50 @@ function AddServiceForm({
             onSubmit={handleSubmit}
             className="rounded-md border border-brand/40 bg-surface-muted p-3"
         >
-            <div className="grid gap-2 sm:grid-cols-2">
-                <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Service name"
-                    autoFocus
-                    required
-                />
-                <Input
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Description (optional)"
-                />
-                <Input
-                    type="number"
-                    min={1}
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="Duration (min)"
-                    required
-                />
-                <Input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="Price"
-                    required
-                />
+            <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                    <Label htmlFor={`${fieldId}-name`}>Service name</Label>
+                    <Input
+                        id={`${fieldId}-name`}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        autoFocus
+                        required
+                    />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor={`${fieldId}-description`}>
+                        Description (optional)
+                    </Label>
+                    <Input
+                        id={`${fieldId}-description`}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor={`${fieldId}-duration`}>Duration (min)</Label>
+                    <Input
+                        id={`${fieldId}-duration`}
+                        type="number"
+                        min={1}
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor={`${fieldId}-price`}>Price (€)</Label>
+                    <Input
+                        id={`${fieldId}-price`}
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        required
+                    />
+                </div>
             </div>
             <div className="mt-2 flex gap-2">
                 <Button type="submit" size="sm" disabled={isPending}>

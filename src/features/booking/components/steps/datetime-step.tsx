@@ -49,7 +49,7 @@ export function DateTimeStep({
   ]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-display">
       <h2 className="font-display text-2xl font-medium tracking-tight">
         {t.datetime.heading}
       </h2>
@@ -109,9 +109,7 @@ function SlotsDisplay({
     );
   }
   if (slotsQuery.status === "ready" && slotsQuery.slots.length === 0) {
-    return (
-      <p className="text-sm text-ink-muted">{t.datetime.noSlots}</p>
-    );
+    return <p className="text-sm text-ink-muted">{t.datetime.noSlots}</p>;
   }
   if (slotsQuery.status !== "ready" || !state.date) return null;
 

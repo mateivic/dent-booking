@@ -61,7 +61,8 @@ export async function GET(
     supabase
       .from("services")
       .select("id, tenant_id, location_id, duration_minutes")
-      .in("id", serviceIds),
+      .in("id", serviceIds)
+      .is("deleted_at", null),
   ]);
 
   if (!location || location.tenant_id !== tenant.id) {

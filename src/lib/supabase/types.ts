@@ -75,6 +75,8 @@ export interface Location {
   /** One-off non-working dates as "YYYY-MM-DD" (location timezone), on top of working_hours. */
   closed_dates: string[];
   image_path: string | null;
+  /** External review URL (e.g. Google review page) the review-request email links to. */
+  review_link: string | null;
   created_at: string;
 }
 
@@ -112,6 +114,8 @@ export interface Service {
   price: number;
   display_order: number;
   created_at: string;
+  /** Soft-delete timestamp; null = active, non-null = archived (hidden but kept for reservation history). */
+  deleted_at: string | null;
 }
 
 export type ReservationStatus =
@@ -141,8 +145,18 @@ export interface Reservation {
   cancellation_token: string;
   sms_reminder_sent: boolean;
   email_reminder_sent: boolean;
+  /** Set when the admin-triggered review-request email was sent (one-time). */
+  review_email_sent_at: string | null;
   cancelled_at: string | null;
   created_at: string;
+}
+
+export interface ReservationService {
+  reservation_id: string;
+  service_id: string;
+  tenant_id: string;
+  /** Snapshot of services.price at booking time; null only for rows written before the snapshot migration/deploy. */
+  price: number | null;
 }
 
 export interface Client {

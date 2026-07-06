@@ -62,8 +62,9 @@ export async function processBooking(
       .maybeSingle(),
     supabase
       .from("services")
-      .select("id, tenant_id, location_id, name, duration_minutes")
-      .in("id", input.serviceIds),
+      .select("id, tenant_id, location_id, name, duration_minutes, price")
+      .in("id", input.serviceIds)
+      .is("deleted_at", null),
   ]);
 
   if (!location || location.tenant_id !== tenant.id) {
@@ -200,11 +201,14 @@ export async function processBooking(
     return { ok: false, status: 500, error: "Failed to create reservation" };
   }
 
+  // `services` is validated above to match input.serviceIds exactly; mapping
+  // from the fetched rows lets us snapshot the price at booking time.
   const { error: rsErr } = await supabase.from("reservation_services").insert(
-    input.serviceIds.map((serviceId) => ({
+    services.map((s) => ({
       reservation_id: reservation.id,
-      service_id: serviceId,
+      service_id: s.id,
       tenant_id: tenant.id,
+      price: s.price,
     })),
   );
   if (rsErr) {

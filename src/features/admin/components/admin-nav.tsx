@@ -84,9 +84,9 @@ export function AdminNav({
 
   return (
     <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-      {/* Logo — links back to the admin home */}
+      {/* Logo — links back to the admin home (the dashboard) */}
       <Link
-        href="/admin"
+        href="/admin/dashboard"
         onClick={() => setOpen(false)}
         className="flex items-center gap-3"
       >

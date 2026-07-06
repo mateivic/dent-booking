@@ -361,3 +361,51 @@ export function renderClientCancellation(
     socials: input.socials,
   });
 }
+
+export interface ReviewRequestInput {
+  tenantName: string;
+  heroUrl: string | null;
+  logoUrl: string | null;
+  primaryColor?: string | null;
+  clientName: string;
+  locationAddress: string | null;
+  locationPhone: string | null;
+  website: string | null;
+  socials: Record<string, string>;
+  startIso: string;
+  timezone: string;
+  /** External review URL (locations.review_link), e.g. a Google review page. */
+  reviewUrl: string;
+}
+
+// Admin-triggered "leave a review" email, sent after a finished appointment.
+export function renderReviewRequest(input: ReviewRequestInput): string {
+  const { date, weekday, time } = formatDateParts(
+    input.startIso,
+    input.timezone,
+  );
+  return renderBrandedEmail({
+    tenantName: input.tenantName,
+    heroUrl: input.heroUrl,
+    logoUrl: input.logoUrl,
+    primaryColor: input.primaryColor,
+    greetingName: input.clientName,
+    message: [
+      "Bilo nam je istinsko zadovoljstvo ugostiti Vas danas u našoj ordinaciji. Vaše nam povjerenje mnogo znači i trudimo se da se kod nas uvijek osjećate ugodno i zbrinuto.",
+      "Vaše nam je mišljenje izuzetno dragocjeno jer nam pomaže da budemo još bolji u onome što radimo. Ako imate trenutak i želite podijeliti svoje dojmove o našem radu, to bi nam puno značilo.",
+      "Hvala Vam što ste odabrali baš nas. Stojimo Vam na raspolaganju za sve što trebate.",
+    ].join("<br/><br/>"),
+    details: [],
+    buttons: [
+      {
+        label: "Ostavite recenziju",
+        url: input.reviewUrl,
+        variant: "primary",
+      },
+    ],
+    locationAddress: input.locationAddress,
+    locationPhone: input.locationPhone,
+    website: input.website,
+    socials: input.socials,
+  });
+}

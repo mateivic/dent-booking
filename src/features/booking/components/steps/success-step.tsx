@@ -47,15 +47,17 @@ export function SuccessStep({ onStartOver }: SuccessStepProps) {
       </span>
 
       <div
-        className="space-y-2 animate-fade-up motion-reduce:animate-none"
+        className="space-y-2 animate-fade-up motion-reduce:animate-none font-display"
         style={{ animationDelay: "120ms" }}
       >
-        <h2 className="font-display text-3xl font-medium tracking-tight">{t.success.heading}</h2>
+        <h2 className="text-3xl font-medium tracking-tight">
+          {t.success.heading}
+        </h2>
         <p className="max-w-sm text-ink-muted">{t.success.message}</p>
       </div>
 
       <div
-        className="pt-2 animate-fade-up motion-reduce:animate-none"
+        className="pt-2 animate-fade-up motion-reduce:animate-none font-display"
         style={{ animationDelay: "240ms" }}
       >
         <Button variant="secondary" onClick={onStartOver}>

@@ -15,7 +15,7 @@ export async function CancelShell({ subdomain, children }: CancelShellProps) {
     const logoUrl = bundle ? getTenantLogoUrl(bundle.tenant.logo_path) : null;
 
     return (
-        <main className="relative mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+        <main className="relative mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-6 py-12 font-display text-center">
             <LanguageSwitcher className="absolute right-6 top-6 text-ink-muted" />
             {logoUrl && (
                 /* eslint-disable-next-line @next/next/no-img-element */

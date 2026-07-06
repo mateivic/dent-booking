@@ -133,13 +133,25 @@ export async function deleteService(input: { id: string }): Promise<ActionResult
     if (!admin) return { ok: false, error: "Unauthorized" };
 
     const supabase = getSupabaseServiceRoleClient();
-    const { error } = await supabase
+
+    // Soft-delete (archive) instead of hard-deleting: a hard delete cascade-drops
+    // reservation_services rows, which erases the service from existing bookings
+    // and hides those bookings from the dashboard's inner-join queries. Archiving
+    // keeps the row for history while removing it from booking + admin listings.
+    // `.select()` turns a forged/foreign id (0 rows matched) into an error rather
+    // than a silent success.
+    const { data: updated, error } = await supabase
         .from("services")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", input.id)
-        .eq("tenant_id", admin.tenantId);
+        .eq("tenant_id", admin.tenantId)
+        .is("deleted_at", null)
+        .select("id");
 
     if (error) return { ok: false, error: error.message };
+    if (!updated || updated.length === 0) {
+        return { ok: false, error: "Service not found" };
+    }
 
     revalidatePath("/admin/services");
     return { ok: true };

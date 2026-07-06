@@ -47,7 +47,8 @@ export async function applyToAllPreview(input: {
             supabase
                 .from("services")
                 .select("id")
-                .eq("location_id", input.sourceLocationId),
+                .eq("location_id", input.sourceLocationId)
+                .is("deleted_at", null),
             supabase
                 .from("locations")
                 .select("id, name")
@@ -151,6 +152,7 @@ export async function applyToAllCommit(input: {
                     "id, category_id, name, description, duration_minutes, price, display_order",
                 )
                 .eq("location_id", input.sourceLocationId)
+                .is("deleted_at", null)
                 .order("display_order"),
             supabase
                 .from("locations")

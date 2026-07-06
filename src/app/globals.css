@@ -73,6 +73,52 @@ body {
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
+/* FullCalendar (admin dashboard) — themed to the app tokens. Non-business
+   time is shaded automatically wherever businessHours are configured. */
+.fc {
+    --fc-border-color: var(--color-border);
+    --fc-page-bg-color: var(--color-surface);
+    --fc-today-bg-color: color-mix(in srgb, var(--color-brand) 5%, transparent);
+    --fc-non-business-color: color-mix(
+        in srgb,
+        var(--color-surface-muted) 70%,
+        transparent
+    );
+    --fc-now-indicator-color: #ef4444;
+    --fc-event-bg-color: color-mix(
+        in srgb,
+        var(--color-brand) 10%,
+        var(--color-surface)
+    );
+    --fc-event-border-color: var(--color-brand);
+    --fc-event-text-color: var(--color-ink);
+}
+
+.fc .fc-timegrid-slot {
+    height: 2.5rem;
+}
+
+.fc .fc-v-event {
+    border-left-width: 3px;
+    box-shadow: none;
+}
+
+.fc .fc-timegrid-event .fc-event-main {
+    padding: 0;
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+    color: var(--color-ink-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.fc a {
+    text-decoration: none;
+}
+
 *,
 *::before,
 *::after {

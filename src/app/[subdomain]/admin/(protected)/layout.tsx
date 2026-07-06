@@ -34,7 +34,7 @@ export default async function ProtectedAdminLayout({
   const logoUrl = getTenantLogoUrl(bundle.tenant.logo_path);
 
   const navItems = [
-    { href: "/admin", label: "Reservations" },
+    { href: "/admin/dashboard", label: "Dashboard" },
     { href: "/admin/services", label: "Services" },
     { href: "/admin/working-hours", label: "Working hours" },
     {

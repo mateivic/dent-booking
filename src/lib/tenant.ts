@@ -65,6 +65,7 @@ const fetchTenantBundle = cache(
           .from("services")
           .select("*")
           .eq("tenant_id", tenant.id)
+          .is("deleted_at", null)
           .order("display_order")
           .order("name"),
         supabase

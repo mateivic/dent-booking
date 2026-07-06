@@ -1,5 +1,5 @@
 import "server-only";
-import { sendEmail } from "@/lib/email/send-email";
+import { sendEmail, type SendEmailResult } from "@/lib/email/send-email";
 import { buildSubdomainUrl } from "@/lib/url";
 import { getTenantHeroUrl, getTenantLogoUrl } from "@/lib/supabase/storage";
 import { buildGoogleCalendarUrl } from "@/features/booking/lib/calendar-link";
@@ -7,6 +7,7 @@ import {
   renderClientCancellation,
   renderClientConfirmation,
   renderClinicNotification,
+  renderReviewRequest,
 } from "@/features/booking/lib/email-templates";
 
 // Booking-specific email orchestration: render the existing templates and hand
@@ -146,6 +147,53 @@ export async function sendBookingCancellationEmail(
   await sendEmail({
     to: { email: args.clientEmail, name: args.clientName },
     subject: `Rezervacija je otkazana – ${args.locationName}`,
+    html,
+    senderName: args.tenantName,
+  });
+}
+
+export interface ReviewRequestEmailArgs {
+  tenantName: string;
+  tenantLogoPath: string | null;
+  tenantHeroPath: string | null;
+  primaryColor: string | null;
+  clientName: string;
+  clientEmail: string;
+  locationName: string;
+  locationAddress: string | null;
+  locationPhone: string | null;
+  website: string | null;
+  socials: Record<string, string>;
+  startIso: string;
+  timezone: string;
+  /** External review URL (locations.review_link). */
+  reviewUrl: string;
+}
+
+// Admin-triggered review request. Unlike the fire-and-forget senders above,
+// this RETURNS the transport result (sendEmail never throws) so the caller can
+// stamp reservations.review_email_sent_at only after a successful send.
+export async function sendReviewRequestEmail(
+  args: ReviewRequestEmailArgs,
+): Promise<SendEmailResult> {
+  const html = renderReviewRequest({
+    tenantName: args.tenantName,
+    heroUrl: getTenantHeroUrl(args.tenantHeroPath),
+    logoUrl: getTenantLogoUrl(args.tenantLogoPath),
+    primaryColor: args.primaryColor,
+    clientName: args.clientName,
+    locationAddress: args.locationAddress,
+    locationPhone: args.locationPhone,
+    website: args.website,
+    socials: args.socials,
+    startIso: args.startIso,
+    timezone: args.timezone,
+    reviewUrl: args.reviewUrl,
+  });
+
+  return sendEmail({
+    to: { email: args.clientEmail, name: args.clientName },
+    subject: `Podijelite svoje iskustvo – ${args.locationName}`,
     html,
     senderName: args.tenantName,
   });

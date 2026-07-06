@@ -51,7 +51,7 @@ export function IntroStep({ onStart }: IntroStepProps) {
 
         {tagline && (
           <p
-            className="max-w-md text-sm font-light tracking-wide text-white/80 animate-fade-up motion-reduce:animate-none"
+            className=" font-display max-w-md text-sm font-light tracking-wide text-white/80 animate-fade-up motion-reduce:animate-none"
             style={{ animationDelay: "180ms" }}
           >
             {tagline}
@@ -62,7 +62,7 @@ export function IntroStep({ onStart }: IntroStepProps) {
           type="button"
           onClick={onStart}
           className={cn(
-            "mt-4 rounded-brand bg-white/95 px-10 py-4 text-xs font-semibold uppercase tracking-[0.25em] text-ink shadow-xl",
+            "mt-4 font-display rounded-brand bg-white/95 px-10 py-4 text-xs font-semibold uppercase tracking-[0.25em] text-ink shadow-xl",
             "transition hover:bg-white active:scale-[0.98] motion-reduce:active:scale-100",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
             "animate-fade-up motion-reduce:animate-none",

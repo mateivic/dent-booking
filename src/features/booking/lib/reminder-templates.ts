@@ -83,7 +83,7 @@ export function renderClientReminder(input: ClientReminderInput): string {
 
 export interface ReminderSmsInput {
   tenantName: string;
-  locationName: string;
+  locationAddress: string;
   startIso: string;
   timezone: string;
 }
@@ -112,6 +112,6 @@ function toGsmSafe(s: string): string {
 
 export function buildReminderSms(input: ReminderSmsInput): string {
   const { date, time } = reminderDateParts(input.startIso, input.timezone);
-  const message = `Podsjetnik: termin u ${input.tenantName} sutra ${date} u ${time}h. Lokacija: ${input.locationName}. Veselimo se Vasem dolasku!`;
+  const message = `Podsjetnik: termin u ${input.tenantName} sutra ${date} u ${time}h. Lokacija: ${input.locationAddress}. Veselimo se Vasem dolasku!`;
   return toGsmSafe(message);
 }

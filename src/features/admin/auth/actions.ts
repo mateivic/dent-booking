@@ -34,7 +34,7 @@ export async function signIn(
   }
 
   revalidatePath("/", "layout");
-  return { redirectTo: buildSubdomainUrl(subdomain, "/admin") };
+  return { redirectTo: buildSubdomainUrl(subdomain, "/admin/dashboard") };
 }
 
 export async function requestPasswordReset(
@@ -78,7 +78,7 @@ export async function setPassword(
   }
 
   revalidatePath("/", "layout");
-  return { redirectTo: buildSubdomainUrl(subdomain, "/admin") };
+  return { redirectTo: buildSubdomainUrl(subdomain, "/admin/dashboard") };
 }
 
 // Sign-out has no form inputs, so it isn't wired through `useActionState`;

@@ -80,7 +80,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     ? nextOverride
     : isPasswordSetupFlow
       ? "/admin/set-password"
-      : "/admin";
+      : "/admin/dashboard";
 
   return NextResponse.redirect(buildSubdomainUrl(subdomain, targetPath));
 }
