@@ -14,6 +14,15 @@ export function parseHHMM(s: string): number {
   return h * 60 + m;
 }
 
+// One-off non-working dates ("YYYY-MM-DD") sit on top of the weekly hours: a
+// date listed here is closed even if its weekday has open/close hours.
+export function isClosedDate(
+  dateIso: string,
+  closedDates: string[] | null | undefined,
+): boolean {
+  return !!closedDates?.includes(dateIso);
+}
+
 export function isWithinWorkingHours(
   start: Date,
   end: Date,
@@ -51,16 +60,21 @@ export function dayWindowUtc(
 }
 
 // First date (YYYY-MM-DD) on/after `fromIso` the location is open, searching up
-// to two weeks ahead. Falls back to `fromIso` if nothing is open (mirrors the
-// previous "default to today" behaviour rather than leaving the picker empty).
+// to two weeks ahead. A day counts as open only if its weekday has hours and it
+// is not a one-off closed date. Falls back to `fromIso` if nothing is open
+// (mirrors the previous "default to today" behaviour rather than leaving the
+// picker empty).
 export function firstOpenDateIso(
   workingHours: WorkingHours,
   timezone: string,
   fromIso: string,
+  closedDates?: string[] | null,
 ): string {
   let cur = fromIso;
   for (let i = 0; i < 14; i++) {
-    if (workingHours[weekdayKey(cur, timezone)]) return cur;
+    if (workingHours[weekdayKey(cur, timezone)] && !isClosedDate(cur, closedDates)) {
+      return cur;
+    }
     cur = addDaysIso(cur, 1);
   }
   return fromIso;

@@ -76,5 +76,6 @@ export const en: Dictionary = {
         doneHeading: "Reservation cancelled",
         doneText:
             "Your reservation has been cancelled and the calendar event removed. A confirmation email is on its way.",
+        bookAnother: "Book another reservation",
     },
 };

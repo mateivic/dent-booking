@@ -113,7 +113,7 @@ export function BookingWizard() {
   const isFirstStep = ORDERED_STEPS.indexOf(state.step) <= firstStepIndex;
 
   return (
-    <main className="relative mx-auto w-full max-w-2xl flex-1 px-6 py-10">
+    <main className="relative mx-auto w-full max-w-2xl flex-1 px-6 pt-10">
       <LanguageSwitcher className="absolute right-6 top-6 text-ink-muted" />
       <header className="mb-6 mt-8 md:mt-16 text-center flex justify-center">
         {logoUrl ? (
@@ -187,19 +187,23 @@ export function BookingWizard() {
             )}
           </motion.div>
         </AnimatePresence>
-
-        <div className="mt-8">
-          <WizardNav
-            currentStep={state.step}
-            canProceed={canProceed}
-            isFirst={isFirstStep}
-            onBack={() => dispatch({ type: "BACK" })}
-            onNext={() => dispatch({ type: "NEXT" })}
-            onSubmit={submit}
-            submitting={false}
-          />
-        </div>
       </section>
+
+      {/* Direct child of <main> so sticky can travel its full height: sits in
+          flow when the step fits the viewport, pins to the bottom edge when it
+          overflows. -mx-6/px-6 counter main's gutter (full-bleed on mobile);
+          pb calc absorbs the iOS home-indicator inset (0 in a browser tab). */}
+      <div className="sticky bottom-0 z-10 -mx-6 mt-8  bg-surface/95 px-6 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
+        <WizardNav
+          currentStep={state.step}
+          canProceed={canProceed}
+          isFirst={isFirstStep}
+          onBack={() => dispatch({ type: "BACK" })}
+          onNext={() => dispatch({ type: "NEXT" })}
+          onSubmit={submit}
+          submitting={false}
+        />
+      </div>
     </main>
   );
 }

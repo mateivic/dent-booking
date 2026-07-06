@@ -75,5 +75,6 @@ export const hr: Dictionary = {
     doneHeading: "Rezervacija otkazana",
     doneText:
       "Vaša rezervacija je otkazana i termin u kalendaru je uklonjen. Potvrda stiže e-mailom.",
+    bookAnother: "Rezerviraj novi termin",
   },
 };

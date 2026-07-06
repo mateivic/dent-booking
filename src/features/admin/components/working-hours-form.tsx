@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -10,11 +10,14 @@ import {
     type UpdateWorkingHoursState,
 } from "../actions/update-working-hours";
 import type { WorkingHours } from "@/lib/supabase/types";
+import { ClosedDatesCalendar } from "./closed-dates-calendar";
 
 interface WorkingHoursFormProps {
     locationId: string;
     locationName: string;
     workingHours: WorkingHours;
+    timezone: string;
+    closedDates: string[];
 }
 
 interface DayState {
@@ -35,6 +38,12 @@ const WEEKDAYS: Array<{ key: string; short: string; label: string }> = [
 
 const initialActionState: UpdateWorkingHoursState = { ok: null };
 
+// "2026-12-25" -> "25.12.2026." (Croatian short date on the summary chips).
+function formatChipDate(iso: string): string {
+    const [y, m, d] = iso.split("-");
+    return `${d}.${m}.${y}.`;
+}
+
 function buildInitialDays(workingHours: WorkingHours): Record<string, DayState> {
     return WEEKDAYS.reduce<Record<string, DayState>>((acc, { key }) => {
         const cfg = workingHours[key];
@@ -49,12 +58,31 @@ export function WorkingHoursForm({
     locationId,
     locationName,
     workingHours,
+    timezone,
+    closedDates: initialClosedDates,
 }: WorkingHoursFormProps) {
     const [state, action, pending] = useActionState(updateWorkingHours, initialActionState);
     const [days, setDays] = useState(() => buildInitialDays(workingHours));
+    const [closedDates, setClosedDates] = useState<string[]>(
+        () => [...initialClosedDates].sort(),
+    );
+
+    // Weekdays already closed by the weekly schedule — the exceptions calendar
+    // greys these out so only otherwise-open days can be marked closed.
+    const weeklyClosedWeekdays = useMemo(
+        () =>
+            new Set(
+                WEEKDAYS.filter(({ key }) => days[key].closed).map(({ key }) => key),
+            ),
+        [days],
+    );
 
     function setDay(key: string, patch: Partial<DayState>) {
         setDays((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+    }
+
+    function removeClosedDate(iso: string) {
+        setClosedDates((prev) => prev.filter((d) => d !== iso));
     }
 
     function applyToWeekdays() {
@@ -201,6 +229,65 @@ export function WorkingHoursForm({
                         </div>
                     );
                 })}
+            </div>
+
+            <div className="space-y-3 border-t border-border pt-6">
+                <div>
+                    <h4 className="text-base font-medium">Non-working days</h4>
+                    <p className="text-sm text-ink-muted">
+                        Click a day to close the clinic for that date (holidays,
+                        vacation). Days already closed by the weekly schedule
+                        can&apos;t be selected.
+                    </p>
+                </div>
+
+                <input
+                    type="hidden"
+                    name="closed_dates"
+                    value={closedDates.join(",")}
+                />
+
+                <div className="flex flex-wrap gap-6">
+                    <ClosedDatesCalendar
+                        value={closedDates}
+                        onChange={setClosedDates}
+                        timezone={timezone}
+                        weeklyClosedWeekdays={weeklyClosedWeekdays}
+                    />
+
+                    <div className="min-w-48 flex-1">
+                        <p className="mb-2 text-sm font-medium">
+                            Selected ({closedDates.length})
+                        </p>
+                        {closedDates.length === 0 ? (
+                            <p className="text-sm text-ink-muted">
+                                No non-working days selected.
+                            </p>
+                        ) : (
+                            <ul className="flex flex-wrap gap-2">
+                                {closedDates.map((iso) => (
+                                    <li key={iso}>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeClosedDate(iso)}
+                                            className={cn(
+                                                "inline-flex items-center gap-1.5 rounded-full",
+                                                "border border-brand/30 bg-brand/5 px-3 py-1",
+                                                "text-sm text-brand transition-colors hover:bg-brand/10",
+                                            )}
+                                            aria-label={`Remove ${formatChipDate(iso)}`}
+                                        >
+                                            {formatChipDate(iso)}
+                                            <span aria-hidden className="text-base leading-none">
+                                                ×
+                                            </span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {state.ok === false && state.error && (

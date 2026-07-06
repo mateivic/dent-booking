@@ -138,7 +138,7 @@ function eventEdgeToIso(
   timezone: string,
 ): string | null {
   if (edge?.dateTime) return edge.dateTime;
-  if (edge?.date) return zonedToUtc(edge.date, "00:00", timezone).toISOString();
+  // if (edge?.date) return zonedToUtc(edge.date, "00:00", timezone).toISOString();
   return null;
 }
 
@@ -206,4 +206,42 @@ export async function fetchGoogleUserEmail(
   const oauth2 = google.oauth2({ version: "v2", auth: client });
   const resp = await oauth2.userinfo.get();
   return resp.data.email ?? null;
+}
+
+export interface CalendarListEntry {
+  id: string;
+  summary: string;
+  primary: boolean;
+}
+
+// Calendars the account can write events to (minAccessRole "writer" includes
+// owners and excludes read-only subscriptions like Holidays). Primary first,
+// rest alphabetical.
+export async function listWritableCalendars(
+  client: OAuth2Client,
+): Promise<CalendarListEntry[]> {
+  const calendar = google.calendar({ version: "v3", auth: client });
+  const entries: CalendarListEntry[] = [];
+  let pageToken: string | undefined;
+  do {
+    const resp = await calendar.calendarList.list({
+      minAccessRole: "writer",
+      maxResults: 250,
+      pageToken,
+    });
+    for (const item of resp.data.items ?? []) {
+      if (!item.id) continue;
+      entries.push({
+        id: item.id,
+        summary: item.summary ?? item.id,
+        primary: item.primary === true,
+      });
+    }
+    pageToken = resp.data.nextPageToken ?? undefined;
+  } while (pageToken);
+  return entries.sort(
+    (a, b) =>
+      Number(b.primary) - Number(a.primary) ||
+      a.summary.localeCompare(b.summary),
+  );
 }

@@ -39,6 +39,8 @@ export default async function WorkingHoursPage({ params, searchParams }: PagePro
                     locationId={resolved.location.id}
                     locationName={resolved.location.name}
                     workingHours={resolved.location.working_hours}
+                    timezone={resolved.location.timezone}
+                    closedDates={resolved.location.closed_dates}
                 />
             )}
         </section>

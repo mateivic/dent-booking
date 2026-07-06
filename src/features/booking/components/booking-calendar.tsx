@@ -5,12 +5,14 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import type { WorkingHours } from "@/lib/supabase/types";
 import { todayIsoInZone, weekdayKey } from "../lib/timezone";
+import { isClosedDate } from "../lib/working-hours";
 
 interface BookingCalendarProps {
   value: string | null; // YYYY-MM-DD in the location's timezone
   onSelect: (dateStr: string) => void;
   timezone: string;
   workingHours: WorkingHours;
+  closedDates: string[];
 }
 
 // react-day-picker works in the browser's local time. We treat its `Date`s as
@@ -41,12 +43,15 @@ export function BookingCalendar({
   onSelect,
   timezone,
   workingHours,
+  closedDates,
 }: BookingCalendarProps) {
   const today = isoToLocalDate(todayIsoInZone(timezone));
   const selected = value ? isoToLocalDate(value) : undefined;
 
-  const isClosedDay = (date: Date): boolean =>
-    !workingHours[weekdayKey(localDateToIso(date), timezone)];
+  const isClosedDay = (date: Date): boolean => {
+    const iso = localDateToIso(date);
+    return !workingHours[weekdayKey(iso, timezone)] || isClosedDate(iso, closedDates);
+  };
 
   return (
     <div className="inline-block rounded-lg border border-border bg-surface p-3">

@@ -6,7 +6,7 @@ import type { BookingAction, BookingState } from "../../lib/booking-state";
 import { formatDuration, sumDurations } from "../../lib/duration";
 import { formatPrice } from "../../lib/money";
 import { cn } from "@/lib/utils";
-import { useT } from "@/features/i18n/language-provider";
+import { useT, useLanguage } from "@/features/i18n/language-provider";
 import { useTenant } from "@/features/tenant-theme/theme-provider";
 
 interface ServicesStepProps {
@@ -19,7 +19,11 @@ interface ServicesStepProps {
 export function ServicesStep({ state, dispatch, categories, services }: ServicesStepProps) {
     const t = useT();
     const { tenant } = useTenant();
+    const { language } = useLanguage();
     const showPrices = tenant.config.showPrices ?? true;
+    // Exact-language match only — no fallback. Absent/blank for the current
+    // language means no note renders.
+    const servicesNote = tenant.config.servicesNote?.[language]?.trim();
     function toggle(id: string) {
         const next = state.serviceIds.includes(id)
             ? state.serviceIds.filter((sid) => sid !== id)
@@ -46,6 +50,12 @@ export function ServicesStep({ state, dispatch, categories, services }: Services
                     </span>
                 )}
             </div>
+
+            {servicesNote && (
+                <p className="whitespace-pre-line rounded-lg border-l-2 border-brand bg-surface-muted px-4 py-3 text-sm text-ink-muted">
+                    {servicesNote}
+                </p>
+            )}
 
             {sortedCategories.length === 0 ? (
                 <p className="rounded-lg border border-border bg-surface-muted p-4 text-sm text-ink-muted">

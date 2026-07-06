@@ -7,6 +7,7 @@ import type { WorkingHours } from '@/lib/supabase/types';
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 const HHMM_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface UpdateWorkingHoursState {
     ok: boolean | null;
@@ -43,6 +44,19 @@ export async function updateWorkingHours(
         working_hours[day] = { open, close };
     }
 
+    // One-off closed dates: comma-separated YYYY-MM-DD from the hidden input.
+    // Validate format, drop blanks, dedupe, sort.
+    const closedRaw = String(formData.get('closed_dates') ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    for (const d of closedRaw) {
+        if (!ISO_DATE_RE.test(d)) {
+            return { ok: false, error: `Invalid date: ${d}` };
+        }
+    }
+    const closed_dates = [...new Set(closedRaw)].sort();
+
     const supabase = getSupabaseServiceRoleClient();
 
     // Scope the write to the admin's tenant: a forged locationId from another
@@ -50,7 +64,7 @@ export async function updateWorkingHours(
     // instead of a silent "success".
     const { data: updated, error } = await supabase
         .from('locations')
-        .update({ working_hours })
+        .update({ working_hours, closed_dates })
         .eq('id', locationId)
         .eq('tenant_id', admin.tenantId)
         .select('id');

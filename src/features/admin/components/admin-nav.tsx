@@ -47,6 +47,26 @@ export function AdminNav({
         : "text-ink-muted hover:text-ink",
     );
 
+  // Opens the tenant's public booking site (the subdomain root) in a new tab
+  // so the admin keeps their current session tab open. Plain anchor + full
+  // document load — the public site lives outside the /admin route tree.
+  const renderBookingSiteLink = (onClick?: () => void) => (
+    <a
+      href="/"
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-8 items-center justify-center gap-1.5 rounded-brand px-3 font-medium transition",
+        "bg-surface-muted text-ink hover:bg-border",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+      )}
+    >
+      Booking site
+      <ExternalLinkIcon />
+    </a>
+  );
+
   const renderLink = (item: AdminNavItem, onClick?: () => void) => (
     <Link
       key={item.href}
@@ -88,6 +108,7 @@ export function AdminNav({
       <nav className="hidden items-center gap-4 text-sm md:flex">
         {items.map((item) => renderLink(item))}
         <span aria-hidden className="h-4 w-px bg-border" />
+        {renderBookingSiteLink()}
         <SignOutButton signOutAction={signOutAction} />
       </nav>
 
@@ -117,10 +138,29 @@ export function AdminNav({
         <nav className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-4 text-sm sm:px-6">
           {items.map((item) => renderLink(item, () => setOpen(false)))}
           <span aria-hidden className="h-px w-full bg-border" />
+          <span>{renderBookingSiteLink(() => setOpen(false))}</span>
           <SignOutButton signOutAction={signOutAction} />
         </nav>
       </div>
     </div>
+  );
+}
+
+function ExternalLinkIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
   );
 }
 

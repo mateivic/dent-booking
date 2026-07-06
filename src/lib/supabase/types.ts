@@ -34,6 +34,8 @@ export interface TenantConfig {
   showPrices?: boolean;
   /** Short tagline shown on the intro/hero screen. */
   tagline?: string;
+  /** Optional note shown atop the services step, keyed by language code (e.g. { hr, en }). */
+  servicesNote?: Record<string, string>;
 }
 
 export type WorkingHoursValue = { open: string; close: string } | null;
@@ -70,6 +72,8 @@ export interface Location {
   socials: Record<string, string>;
   timezone: string;
   working_hours: WorkingHours;
+  /** One-off non-working dates as "YYYY-MM-DD" (location timezone), on top of working_hours. */
+  closed_dates: string[];
   image_path: string | null;
   created_at: string;
 }

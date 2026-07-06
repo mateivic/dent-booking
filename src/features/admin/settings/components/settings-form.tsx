@@ -6,33 +6,46 @@ import { Switch } from "@/components/ui/switch";
 import {
   updateShowPrices,
   updateSmsReminders,
+  updateServicesNote,
   type UpdateSettingsResult,
 } from "../actions/settings";
 
 interface SettingsFormProps {
   showPrices: boolean;
   smsReminders: boolean;
+  availableLanguages: string[];
+  servicesNote: Record<string, string>;
 }
 
 export function SettingsForm({
   showPrices: initialShowPrices,
   smsReminders: initialSmsReminders,
+  availableLanguages,
+  servicesNote: initialServicesNote,
 }: SettingsFormProps) {
   const [showPrices, setShowPrices] = useState(initialShowPrices);
   const [smsReminders, setSmsReminders] = useState(initialSmsReminders);
+  const [servicesNote, setServicesNote] =
+    useState<Record<string, string>>(initialServicesNote);
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<UpdateSettingsResult | null>(null);
 
   function save() {
     startTransition(async () => {
-      // Sequential, not parallel: both actions read-merge-write tenants.config,
-      // so running them concurrently would race and lose one change.
+      // Sequential, not parallel: all three actions read-merge-write
+      // tenants.config, so running them concurrently would race and lose a
+      // change.
       const priceResult = await updateShowPrices(showPrices);
       if (!priceResult.ok) {
         setResult(priceResult);
         return;
       }
-      setResult(await updateSmsReminders(smsReminders));
+      const smsResult = await updateSmsReminders(smsReminders);
+      if (!smsResult.ok) {
+        setResult(smsResult);
+        return;
+      }
+      setResult(await updateServicesNote(servicesNote));
     });
   }
 
@@ -67,6 +80,32 @@ export function SettingsForm({
           }}
           aria-label="Send SMS reminders the day before"
         />
+      </div>
+
+      <div className="space-y-3 rounded-lg border border-border p-4">
+        <div>
+          <span className="block font-medium">Services page note</span>
+          <span className="mt-1 block text-sm text-ink-muted">
+            Optional note shown at the top of the services step. Shown only for
+            the language it&apos;s written in.
+          </span>
+        </div>
+        {availableLanguages.map((lang) => (
+          <label key={lang} className="block space-y-1">
+            <span className="text-sm font-medium uppercase text-ink-muted">
+              {lang}
+            </span>
+            <textarea
+              value={servicesNote[lang] ?? ""}
+              onChange={(e) => {
+                setServicesNote((prev) => ({ ...prev, [lang]: e.target.value }));
+                setResult(null);
+              }}
+              rows={3}
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm"
+            />
+          </label>
+        ))}
       </div>
 
       {result?.ok === false && result.error && (

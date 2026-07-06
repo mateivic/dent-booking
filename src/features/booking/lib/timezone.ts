@@ -88,18 +88,23 @@ export function formatHHMM(date: Date, timezone: string): string {
   }).format(date);
 }
 
-// Today's date as YYYY-MM-DD in `timezone`.
-export function todayIsoInZone(timezone: string): string {
+// Calendar date (YYYY-MM-DD) of an instant, as seen in `timezone`.
+export function dateIsoInZone(date: Date, timezone: string): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(date);
   const year = parts.find((p) => p.type === "year")!.value;
   const month = parts.find((p) => p.type === "month")!.value;
   const day = parts.find((p) => p.type === "day")!.value;
   return `${year}-${month}-${day}`;
+}
+
+// Today's date as YYYY-MM-DD in `timezone`.
+export function todayIsoInZone(timezone: string): string {
+  return dateIsoInZone(new Date(), timezone);
 }
 
 // Add `days` calendar days to a YYYY-MM-DD string (returns YYYY-MM-DD).

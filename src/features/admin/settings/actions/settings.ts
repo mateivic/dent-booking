@@ -78,3 +78,45 @@ export async function updateSmsReminders(
     revalidatePath("/admin/settings");
     return { ok: true };
 }
+
+// Updates the per-tenant, per-language services-step note in tenants.config
+// JSONB. Merges so other config keys survive. Prunes blank/whitespace-only
+// languages so the stored map only ever holds languages with real text.
+// Same authz + service-role + read-merge-write pattern as updateShowPrices.
+export async function updateServicesNote(
+    note: Record<string, string>,
+): Promise<UpdateSettingsResult> {
+    const admin = await getAuthedAdmin();
+    if (!admin) return { ok: false, error: "Unauthorized" };
+
+    const supabase = getSupabaseServiceRoleClient();
+
+    const { data: row, error: readErr } = await supabase
+        .from("tenants")
+        .select("config")
+        .eq("id", admin.tenantId)
+        .maybeSingle();
+    if (readErr) return { ok: false, error: readErr.message };
+    if (!row) return { ok: false, error: "Tenant not found" };
+
+    const pruned: Record<string, string> = {};
+    for (const [lang, text] of Object.entries(note)) {
+        const trimmed = text.trim();
+        if (trimmed) pruned[lang] = trimmed;
+    }
+
+    const current = (row.config ?? {}) as TenantConfig;
+    const nextConfig: TenantConfig = { ...current, servicesNote: pruned };
+
+    const { error: writeErr } = await supabase
+        .from("tenants")
+        .update({ config: nextConfig })
+        .eq("id", admin.tenantId);
+    if (writeErr) return { ok: false, error: writeErr.message };
+
+    revalidatePath("/admin/settings");
+    // The public booking layout reads config via ThemeProvider — refresh it so
+    // the note takes effect on the wizard without a redeploy.
+    revalidatePath("/", "layout");
+    return { ok: true };
+}

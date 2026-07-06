@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { getAvailabilityConnector } from "@/features/availability/connectors/factory";
-import { dayWindowUtc } from "@/features/booking/lib/working-hours";
+import { dayWindowUtc, isClosedDate } from "@/features/booking/lib/working-hours";
 import { weekdayKey } from "@/features/booking/lib/timezone";
 import {
   generateSlots,
@@ -55,7 +55,7 @@ export async function GET(
   const [{ data: location }, { data: services }] = await Promise.all([
     supabase
       .from("locations")
-      .select("id, tenant_id, timezone, working_hours")
+      .select("id, tenant_id, timezone, working_hours, closed_dates")
       .eq("id", locationId)
       .maybeSingle(),
     supabase
@@ -89,7 +89,7 @@ export async function GET(
   const tz = location.timezone as string;
   const workingHours = location.working_hours as WorkingHours;
   const dayConfig = workingHours[weekdayKey(date, tz)];
-  if (!dayConfig) {
+  if (!dayConfig || isClosedDate(date, location.closed_dates as string[])) {
     return NextResponse.json({ date, timezone: tz, slots: [] });
   }
 

@@ -86,6 +86,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     console.warn("[oauth/google/callback] could not fetch user email", err);
   }
 
+  // Preserve a previously chosen calendar when the same Google account
+  // reconnects. A different account's calendar ids are meaningless here, and
+  // if either email is unknown we can't prove it's the same account — reset
+  // to "primary" in both cases.
+  const { data: existing } = await service
+    .from("calendar_integrations")
+    .select("google_email, google_calendar_id")
+    .eq("location_id", location.id)
+    .maybeSingle();
+  const calendarId =
+    existing?.google_email && googleEmail && existing.google_email === googleEmail
+      ? existing.google_calendar_id
+      : "primary";
+
   const expiresAt = tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null;
   const { error: upsertErr } = await service
     .from("calendar_integrations")
@@ -94,7 +108,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         tenant_id: location.tenant_id,
         location_id: location.id,
         google_email: googleEmail,
-        google_calendar_id: "primary",
+        google_calendar_id: calendarId,
         access_token: tokens.access_token ?? "",
         refresh_token: tokens.refresh_token,
         token_expires_at: expiresAt,

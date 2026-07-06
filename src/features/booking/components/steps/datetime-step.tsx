@@ -36,10 +36,17 @@ export function DateTimeStep({
           location.working_hours,
           location.timezone,
           today,
+          location.closed_dates,
         ),
       });
     }
-  }, [state.date, location.timezone, location.working_hours, dispatch]);
+  }, [
+    state.date,
+    location.timezone,
+    location.working_hours,
+    location.closed_dates,
+    dispatch,
+  ]);
 
   return (
     <div className="space-y-4">
@@ -53,6 +60,7 @@ export function DateTimeStep({
           onSelect={(date) => dispatch({ type: "SET_DATE", date })}
           timezone={location.timezone}
           workingHours={location.working_hours}
+          closedDates={location.closed_dates}
         />
       </div>
 

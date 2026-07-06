@@ -5,7 +5,11 @@ import { getSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { sendBookingConfirmationEmails } from "@/features/booking/server/booking-emails";
 import { getAvailabilityConnector } from "@/features/availability/connectors/factory";
 import type { AvailabilityConnector } from "@/features/availability/connectors/types";
-import { isWithinWorkingHours } from "@/features/booking/lib/working-hours";
+import {
+  isClosedDate,
+  isWithinWorkingHours,
+} from "@/features/booking/lib/working-hours";
+import { dateIsoInZone } from "@/features/booking/lib/timezone";
 import type { WorkingHours } from "@/lib/supabase/types";
 
 export interface ProcessBookingClient {
@@ -52,7 +56,7 @@ export async function processBooking(
     supabase
       .from("locations")
       .select(
-        "id, tenant_id, name, contact_email, address, phone, website, socials, timezone, working_hours",
+        "id, tenant_id, name, contact_email, address, phone, website, socials, timezone, working_hours, closed_dates",
       )
       .eq("id", input.locationId)
       .maybeSingle(),
@@ -105,6 +109,15 @@ export async function processBooking(
     )
   ) {
     return { ok: false, status: 400, error: "Slot is outside working hours" };
+  }
+
+  if (
+    isClosedDate(
+      dateIsoInZone(startTime, location.timezone),
+      location.closed_dates as string[],
+    )
+  ) {
+    return { ok: false, status: 400, error: "Clinic is closed on this date" };
   }
 
   const connector = await getAvailabilityConnector(supabase, location.id);

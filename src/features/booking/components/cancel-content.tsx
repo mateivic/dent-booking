@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { useT } from "@/features/i18n/language-provider";
 import { formatLocalDateTime } from "../lib/duration";
@@ -35,6 +36,12 @@ export function CancelContent(props: CancelContentProps) {
                     {t.cancel.doneHeading}
                 </h1>
                 <p className="mt-3 max-w-sm text-ink-muted">{t.cancel.doneText}</p>
+                <Link
+                    href="/"
+                    className="mt-6 inline-flex h-10 items-center justify-center rounded-brand bg-brand px-4 text-sm font-medium text-white transition hover:bg-brand-accent"
+                >
+                    {t.cancel.bookAnother}
+                </Link>
             </>
         );
     }

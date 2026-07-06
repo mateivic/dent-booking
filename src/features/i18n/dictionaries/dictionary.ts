@@ -76,6 +76,7 @@ export interface Dictionary {
         alreadyText: string;
         doneHeading: string;
         doneText: string;
+        bookAnother: string;
     };
 }
 
