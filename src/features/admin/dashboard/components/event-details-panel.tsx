@@ -231,9 +231,8 @@ export function EventDetailsPanel({
             </p>
             {event.clientEmail && event.hasReviewLink ? (
               <p className="text-ink">
-                The client receives an email at{" "}
-                <span className="font-medium">{event.clientEmail}</span> with a
-                link to leave a review. This can only be sent once.
+                The client receives an email with a link to leave a review. This
+                can only be sent once.
               </p>
             ) : null}
             {!event.clientEmail ? (

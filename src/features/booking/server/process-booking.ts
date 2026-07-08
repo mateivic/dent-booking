@@ -362,7 +362,7 @@ async function cancelStaleConflicts(
     let deleted: boolean;
     try {
       deleted =
-        (await connector.getEventStatus(conflict.google_event_id)) ===
+        (await connector.getEventDetails(conflict.google_event_id)).status ===
         "deleted";
     } catch (err) {
       console.error(

@@ -179,23 +179,41 @@ export async function deleteCalendarEvent(
   }
 }
 
-// Whether a calendar event still exists and is active. Used to self-heal stale
-// reservations whose Google event was deleted (Google is the source of truth
-// for availability): a 404/410 or a "cancelled" status both mean it's gone.
-export async function getCalendarEventStatus(
+export interface CalendarEventSnapshot {
+  status: "active" | "deleted";
+  // Raw Google start: a full ISO instant for timed events (`start.dateTime`) or
+  // a date-only "YYYY-MM-DD" for all-day events (`start.date`). Null when the
+  // event is deleted or has no start.
+  startIso: string | null;
+}
+
+// Current status + start of a calendar event, from a single events.get. Google
+// is the source of truth for availability: a 404/410 or a "cancelled" status
+// both mean it's gone. Used to self-heal stale reservations whose Google event
+// was deleted (callers read `.status`), and by the reminder job, which also
+// compares `.startIso` to detect an event moved to a different day.
+export async function getCalendarEvent(
   client: OAuth2Client,
   calendarId: string,
   eventId: string,
-): Promise<"active" | "deleted"> {
+): Promise<CalendarEventSnapshot> {
   const calendar = google.calendar({ version: "v3", auth: client });
   try {
     const resp = await calendar.events.get({ calendarId, eventId });
-    return resp.data.status === "cancelled" ? "deleted" : "active";
+    if (resp.data.status === "cancelled") {
+      return { status: "deleted", startIso: null };
+    }
+    return {
+      status: "active",
+      startIso: resp.data.start?.dateTime ?? resp.data.start?.date ?? null,
+    };
   } catch (err: unknown) {
     const status =
       (err as { code?: number; status?: number }).code ??
       (err as { code?: number; status?: number }).status;
-    if (status === 404 || status === 410) return "deleted";
+    if (status === 404 || status === 410) {
+      return { status: "deleted", startIso: null };
+    }
     throw err;
   }
 }

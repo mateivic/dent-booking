@@ -3,7 +3,7 @@ import type { OAuth2Client } from "google-auth-library";
 import {
   createCalendarEvent,
   deleteCalendarEvent,
-  getCalendarEventStatus,
+  getCalendarEvent,
   listBusyWindows,
   type CalendarEventInput,
 } from "@/features/calendar/lib/google";
@@ -37,8 +37,8 @@ export function createGoogleConnector(
       }
     },
 
-    getEventStatus(externalEventId) {
-      return getCalendarEventStatus(client, calendarId, externalEventId);
+    getEventDetails(externalEventId) {
+      return getCalendarEvent(client, calendarId, externalEventId);
     },
 
     deleteEvent(externalEventId) {

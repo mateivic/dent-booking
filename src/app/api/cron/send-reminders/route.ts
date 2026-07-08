@@ -36,11 +36,7 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, ...summary });
 }
 
-// Supabase Cron uses POST; GET is accepted too for manual invocation/testing.
+// Supabase Cron uses POST.
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  return handle(request);
-}
-
-export async function GET(request: NextRequest): Promise<NextResponse> {
   return handle(request);
 }

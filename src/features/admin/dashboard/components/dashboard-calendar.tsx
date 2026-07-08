@@ -76,7 +76,7 @@ export function DashboardCalendar({
           className="flex h-full items-center gap-1 overflow-hidden px-1.5 leading-none"
           title={title}
         >
-          {syncWarning ? <SyncWarningIcon /> : null}
+          {/* {syncWarning ? <SyncWarningIcon /> : null} */}
           {reviewSent ? <ReviewSentIcon /> : null}
           <span className="truncate text-[11px] font-medium">
             {vm.clientName}
@@ -92,7 +92,7 @@ export function DashboardCalendar({
       >
         <p className="flex items-center gap-1 truncate text-[11px] leading-tight text-ink-muted">
           {vm.timeLabel}
-          {syncWarning ? <SyncWarningIcon /> : null}
+          {/* {syncWarning ? <SyncWarningIcon /> : null} */}
           {reviewSent ? <ReviewSentIcon /> : null}
         </p>
         <p className="truncate text-xs font-medium leading-tight">

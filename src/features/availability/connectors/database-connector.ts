@@ -39,9 +39,10 @@ export function createDatabaseConnector(
       return { externalEventId: null, syncStatus: "NOT_APPLICABLE", confirmed: true };
     },
 
-    // DB is authoritative; a conflicting row is always a real conflict.
-    async getEventStatus() {
-      return "active";
+    // DB is authoritative; a conflicting row is always a real conflict, and
+    // there is no external event to read a start time from.
+    async getEventDetails() {
+      return { status: "active" as const, startIso: null };
     },
 
     // Nothing to delete externally.

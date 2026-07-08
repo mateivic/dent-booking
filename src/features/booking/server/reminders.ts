@@ -10,6 +10,7 @@ import { buildSubdomainUrl } from "@/lib/url";
 import { getTenantHeroUrl, getTenantLogoUrl } from "@/lib/supabase/storage";
 import {
   addDaysIso,
+  dateIsoInZone,
   todayIsoInZone,
   zonedToUtc,
 } from "@/features/booking/lib/timezone";
@@ -180,13 +181,18 @@ async function processReservation(
 ): Promise<void> {
   const { tenant, config, smsEnabled, location, connector, reservation } = ctx;
 
-  // Connector is the source of truth for connected locations: if the event was
-  // removed (e.g. cancelled in Google Calendar), skip. Only a definitive
-  // "deleted" suppresses the reminder — a transient API error sends anyway.
+  // Connector is the source of truth for connected locations. Skip the reminder
+  // when the event was removed (cancelled/deleted in Google Calendar) or moved
+  // to a different day than the DB row — otherwise the client gets a reminder
+  // for a day the appointment is no longer on. Same-day time shifts still send.
+  // Only a definitive answer suppresses — a transient API error sends anyway.
   if (reservation.google_event_id) {
-    let status: "active" | "deleted" = "active";
+    let details: { status: "active" | "deleted"; startIso: string | null } = {
+      status: "active",
+      startIso: null,
+    };
     try {
-      status = await connector.getEventStatus(reservation.google_event_id);
+      details = await connector.getEventDetails(reservation.google_event_id);
     } catch (err) {
       console.error(
         "[reminders] could not verify event; sending anyway",
@@ -194,9 +200,26 @@ async function processReservation(
         err,
       );
     }
-    if (status === "deleted") {
+    if (details.status === "deleted") {
       summary.skipped++;
       return;
+    }
+    if (details.startIso) {
+      const raw = details.startIso;
+      // All-day events return a date-only "YYYY-MM-DD" (use directly); timed
+      // events return a full ISO instant (convert to the location's local date).
+      const eventDay =
+        raw.length === 10 && !raw.includes("T")
+          ? raw
+          : dateIsoInZone(new Date(raw), location.timezone);
+      const reservationDay = dateIsoInZone(
+        new Date(reservation.start_time),
+        location.timezone,
+      );
+      if (eventDay !== reservationDay) {
+        summary.skipped++;
+        return;
+      }
     }
   }
 

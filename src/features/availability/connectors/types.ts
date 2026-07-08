@@ -2,12 +2,13 @@ import "server-only";
 import type {
   BusyWindow,
   CalendarEventInput,
+  CalendarEventSnapshot,
 } from "@/features/calendar/lib/google";
 import type { GoogleSyncStatus } from "@/lib/supabase/types";
 
 // Re-export so connector implementations import BusyWindow from "./types" rather
 // than reaching into the calendar feature.
-export type { BusyWindow };
+export type { BusyWindow, CalendarEventSnapshot };
 
 export type ConnectorKind = "google" | "database";
 
@@ -42,10 +43,12 @@ export interface AvailabilityConnector {
   // folded into the result so callers handle every connector uniformly.
   createEvent(details: CalendarEventInput): Promise<ConnectorEventResult>;
 
-  // For 23P01 stale-conflict self-heal: is a conflicting reservation's external
-  // event gone? The database connector always reports "active" (DB is
-  // authoritative — nothing to heal).
-  getEventStatus(externalEventId: string): Promise<"active" | "deleted">;
+  // Current status + start of a booking's external event. Used for 23P01
+  // stale-conflict self-heal (is a conflicting reservation's event gone?) and by
+  // the reminder job (has the event moved to a different day?). The database
+  // connector always reports { status: "active", startIso: null } — the DB is
+  // authoritative and has no external start.
+  getEventDetails(externalEventId: string): Promise<CalendarEventSnapshot>;
 
   // Best-effort removal of the external event on cancellation. No-op for the
   // database connector.
